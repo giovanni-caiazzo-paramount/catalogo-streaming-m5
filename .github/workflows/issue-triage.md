@@ -18,6 +18,14 @@ safe-outputs:
   add-labels:
     max: 3
   add-comment:
+  # gh-aw enables failure-reporting safe-outputs by default (noop/missing-tool/
+  # missing-data/report-incomplete), some of which can CREATE new issues. This
+  # workflow's scope is strictly "apply labels + post one comment", so disable
+  # them to keep the compiled job at least privilege.
+  noop: false
+  missing-tool: false
+  missing-data: false
+  report-incomplete: false
 ---
 
 # Issue Triage
