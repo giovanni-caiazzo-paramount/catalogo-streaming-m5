@@ -1,0 +1,45 @@
+name: Agentic Lock Check
+
+# Fails if any agentic workflow Markdown was changed without re-running
+# `gh aw compile`, i.e. the committed *.lock.yml is out of sync with its source.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/*.md"
+      - ".github/workflows/*.lock.yml"
+      - ".github/aw/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/*.md"
+      - ".github/workflows/*.lock.yml"
+      - ".github/aw/**"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install gh-aw extension (pinned)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh extension install github/gh-aw --pin v0.81.6
+
+      - name: Recompile agentic workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh aw compile --no-check-update
+
+      - name: Verify lock files are up to date
+        run: |
+          if ! git diff --exit-code -- '.github/workflows/*.lock.yml'; then
+            echo "::error::Agentic lock files are out of date. Run 'gh aw compile' locally and commit the regenerated *.lock.yml."
+            exit 1
+          fi
