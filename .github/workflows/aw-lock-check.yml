@@ -27,10 +27,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Install gh-aw extension (pinned)
+      - name: Resolve gh-aw version from committed lock files
+        id: ghaw
+        run: |
+          # Each *.lock.yml records the compiler that produced it in its
+          # line-1 `gh-aw-metadata` header. Verify against that exact version
+          # so this check stays correct across gh-aw upgrades with nothing to
+          # hand-maintain here.
+          ver="$(grep -hoE '"compiler_version":"[^"]+"' .github/workflows/*.lock.yml \
+                 | sed -E 's/.*"compiler_version":"([^"]+)".*/\1/' | sort -u)"
+          if [ "$(printf '%s\n' "$ver" | grep -c .)" -ne 1 ]; then
+            echo "::error::Expected exactly one gh-aw compiler_version across lock files, found: ${ver:-<none>}"
+            exit 1
+          fi
+          echo "version=$ver" >> "$GITHUB_OUTPUT"
+          echo "Verifying against gh-aw $ver"
+
+      - name: Install gh-aw extension
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh extension install github/gh-aw --pin v0.81.6
+        run: gh extension install github/gh-aw --pin "${{ steps.ghaw.outputs.version }}"
 
       - name: Recompile agentic workflows
         env:
