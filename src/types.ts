@@ -35,6 +35,25 @@ export interface UpdateContentInput {
   rating?: number;
 }
 
+// Modello utente. `passwordHash` è sensibile e non va MAI esposto via API.
+export type UserRole = "user" | "admin";
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: UserRole;
+}
+
+// DTO pubblico: allowlist esplicita dei campi esponibili (no passwordHash).
+export interface PublicUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
 // Errore di validazione del dominio: le route lo traducono in 400.
 export class ValidationError extends Error {
   constructor(message: string) {
