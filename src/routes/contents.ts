@@ -1,19 +1,7 @@
-import { type Response, Router } from "express";
+import { Router } from "express";
 import { ContentService } from "../services/contentService";
 import { ValidationError } from "../types";
-
-// Risposta d'errore in formato Problem Details (RFC 9457).
-function problem(
-  res: Response,
-  status: number,
-  title: string,
-  detail: string,
-): void {
-  res
-    .status(status)
-    .type("application/problem+json")
-    .json({ type: "about:blank", title, status, detail });
-}
+import { problem } from "../utils/problem";
 
 // Factory: crea un router con un ContentService fresco (stato isolato per i test).
 export function createContentsRouter(

@@ -10,8 +10,8 @@ export function createUsersRouter(
 
   // GET /api/v1/users?id=<id> — ritorna il DTO pubblico dell'utente.
   router.get("/", (req, res) => {
-    const id = req.query.id;
-    if (typeof id !== "string" || id.trim().length === 0) {
+    const raw = req.query.id;
+    if (typeof raw !== "string" || raw.trim().length === 0) {
       problem(
         res,
         400,
@@ -21,7 +21,8 @@ export function createUsersRouter(
       return;
     }
 
-    const user = service.getPublicById(id.trim());
+    const id = raw.trim();
+    const user = service.getPublicById(id);
     if (!user) {
       problem(res, 404, "Not Found", `Utente ${id} non trovato`);
       return;
