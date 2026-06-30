@@ -55,7 +55,12 @@ jobs:
 
       - name: Verify lock files are up to date
         run: |
-          if ! git diff --exit-code -- '.github/workflows/*.lock.yml'; then
-            echo "::error::Agentic lock files are out of date. Run 'gh aw compile' locally and commit the regenerated *.lock.yml."
+          # Use `git status --porcelain` rather than `git diff`: a freshly
+          # compiled lock file for a brand-new *.md is *untracked*, which
+          # `git diff` ignores. status -uall catches modified AND new files.
+          changes="$(git status --porcelain --untracked-files=all -- '.github/workflows' '.github/aw')"
+          if [ -n "$changes" ]; then
+            echo "::error::Agentic lock files are out of date or uncommitted. Run 'gh aw compile' locally and commit the regenerated files."
+            echo "$changes"
             exit 1
           fi
